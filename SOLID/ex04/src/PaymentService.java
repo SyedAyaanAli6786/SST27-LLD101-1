@@ -1,11 +1,11 @@
-
 public class PaymentService {
-    String pay(Payment p){
-        switch (p.provider) {
-            case "CARD": return "Charged card: " + p.amount;
-            case "UPI":  return "Paid via UPI: " + p.amount;
-            case "WALLET": return "Wallet debit: " + p.amount;
-            default: throw new RuntimeException("No provider");
-        }
+    private final PaymentProcessor processor;
+
+    public PaymentService(PaymentProcessor processor) {
+        this.processor = processor;
+    }
+
+    public String processPayment(Payment payment) {
+        return processor.pay(payment);
     }
 }

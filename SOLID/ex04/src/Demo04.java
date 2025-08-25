@@ -1,6 +1,11 @@
-
 public class Demo04 {
     public static void main(String[] args) {
-        System.out.println(new PaymentService().pay(new Payment("UPI", 499)));
+        Payment payment = new Payment(499);
+
+        // Choose processor dynamically
+        PaymentProcessor processor = new UpiPaymentProcessor();
+
+        PaymentService service = new PaymentService(processor);
+        System.out.println(service.processPayment(payment));
     }
 }
