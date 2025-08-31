@@ -6,16 +6,34 @@ import java.nio.file.Path;
 import java.util.Properties;
 
 /**
- * FAULTY "Singleton": public constructor, getInstance() returns a NEW instance each time,
- * not thread-safe, reload allowed anytime, mutable global state, reflection+serialization-friendly.
+ * Thread-safe Singleton implementation of AppSettings.
+ * - Lazy initialization (Bill Pugh Holder idiom).
+ * - Blocks reflection-based multiple instantiation.
+ * - Preserves singleton on serialization (readResolve).
  */
-public class AppSettings implements Serializable {
+public final class AppSettings implements Serializable {
+
+    private static final long serialVersionUID = 1L;
+
     private final Properties props = new Properties();
 
-    public AppSettings() { } // should not be public for true singleton
+    // Flag to detect reflection attack
+    private static volatile boolean initialized = false;
+
+    private AppSettings() {
+        if (initialized) {
+            throw new IllegalStateException("Singleton already initialized");
+        }
+        initialized = true;
+    }
+
+    // Holder idiom ensures lazy + thread-safe initialization
+    private static class Holder {
+        private static final AppSettings INSTANCE = new AppSettings();
+    }
 
     public static AppSettings getInstance() {
-        return new AppSettings(); // returns a fresh instance (bug)
+        return Holder.INSTANCE;
     }
 
     public void loadFromFile(Path file) {
@@ -28,5 +46,10 @@ public class AppSettings implements Serializable {
 
     public String get(String key) {
         return props.getProperty(key);
+    }
+
+    // Prevents new instances during deserialization
+    private Object readResolve() {
+        return getInstance();
     }
 }
